@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "emails",
+      "type": "array",
+      "label": "Email List",
+      "description": "List of email addresses to verify (maximum 500,000)",
+      "validation": {
+        "required": true,
+        "minItems": 1,
+        "maxItems": 500000
+      },
+      "ui_options": {
+        "ui_widget": "textarea",
+        "placeholder": "[\"email1@example.com\", \"email2@example.com\"]"
+      }
+    },
+    {
+      "id": "task_name",
+      "type": "string",
+      "label": "Task Name",
+      "description": "Name for this bulk verification task (optional)",
+      "default": "My Bulk Verification Task",
+      "validation": {
+        "required": false,
+        "maxLength": 100
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "BounceBan API Key",
+      "description": "Select your connected BounceBan API key. You can find your API key at https://bounceban.com/app/api/settings",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["emails", "task_name", "api_connection"]
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "task_id",
+      "type": "string",
+      "label": "Task ID",
+      "description": "The task ID of the completed bulk verification",
+      "validation": {
+        "required": true
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "12345-abc-def-67890"
+      }
+    },
+    {
+      "id": "offset",
+      "type": "integer",
+      "label": "Offset",
+      "description": "Starting position for paginated results (default: 0)",
+      "validation": {
+        "required": false,
+        "minimum": 0
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "0"
+      }
+    },
+    {
+      "id": "limit",
+      "type": "integer",
+      "label": "Limit",
+      "description": "Number of results to retrieve (1-10000, default: 1000)",
+      "validation": {
+        "required": false,
+        "minimum": 1,
+        "maximum": 10000
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "1000"
+      }
+    },
+    {
+      "id": "filter_status",
+      "type": "string",
+      "label": "Filter Status",
+      "description": "Filter results by status (default: all)",
+      "validation": {
+        "required": false,
+        "enum": ["all", "deliverable", "undeliverable", "risky", "unknown"]
+      },
+      "ui_options": {
+        "ui_widget": "select",
+        "options": [
+          {"label": "All", "value": "all"},
+          {"label": "Deliverable", "value": "deliverable"},
+          {"label": "Undeliverable", "value": "undeliverable"},
+          {"label": "Risky", "value": "risky"},
+          {"label": "Unknown", "value": "unknown"}
+        ]
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "BounceBan API Key",
+      "description": "Select your connected BounceBan API key. You can find your API key at https://bounceban.com/app/api/settings",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["task_id", "offset", "limit", "filter_status", "api_connection"]
+  }
+}

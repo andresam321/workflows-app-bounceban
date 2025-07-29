@@ -1,0 +1,3 @@
+module_settings:
+  module_name: "BounceBan - Submit Bulk Verification"
+  module_description: "Submit a list of email addresses for bulk verification. Returns a task ID that can be used to check status and retrieve results. Supports up to 500,000 emails per task."

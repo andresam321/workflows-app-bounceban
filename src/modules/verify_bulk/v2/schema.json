@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "task_id",
+      "type": "string",
+      "label": "Task ID",
+      "description": "The task ID returned from the bulk verification submission",
+      "validation": {
+        "required": true
+      },
+      "ui_options": {
+        "ui_widget": "input",
+        "placeholder": "12345-abc-def-67890"
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "BounceBan API Key",
+      "description": "Select your connected BounceBan API key. You can find your API key at https://bounceban.com/app/api/settings",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["task_id", "api_connection"]
+  }
+}

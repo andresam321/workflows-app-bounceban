@@ -1,0 +1,3 @@
+module_settings:
+  module_name: "BounceBan - Get Bulk Status"
+  module_description: "Check the processing status of a bulk verification task. Returns progress information including total emails, checked count, and completion percentage."
