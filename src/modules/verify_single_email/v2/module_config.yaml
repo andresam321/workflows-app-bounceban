@@ -1,0 +1,3 @@
+module_settings:
+  module_name: "BounceBan - Get Verification Result"
+  module_description: "Retrieve the result of a previously submitted email verification. Use the verification ID returned from the submit email action. Some results may take time to process, especially for catch-all and SEG-protected emails."

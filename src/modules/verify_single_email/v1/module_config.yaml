@@ -1,0 +1,3 @@
+module_settings:
+  module_name: "BounceBan - Submit Email for Verification"
+  module_description: "Submit an email address to BounceBan for verification. Returns a verification ID that can be used to retrieve results. Single email verifications are free and unlimited."

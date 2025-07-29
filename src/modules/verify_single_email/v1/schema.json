@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "workflows_module_schema_version": "1.0.0"
+  },
+  "fields": [
+    {
+      "id": "email",
+      "type": "string",
+      "label": "Email Address",
+      "description": "The email address to verify",
+      "validation": {
+        "required": true,
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      }
+    },
+    {
+      "type": "connection",
+      "id": "api_connection",
+      "label": "BounceBan API Key",
+      "description": "Select your connected BounceBan API key. You can find your API key at https://bounceban.com/app/api/settings",
+      "allowed_app_types": ["hyperline"],
+      "allowed_connection_management_types": ["managed", "custom"]
+    }
+  ],
+  "ui_options": {
+    "ui_order": ["email", "api_connection"]
+  }
+}
