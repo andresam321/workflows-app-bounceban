@@ -4,16 +4,12 @@
   },
   "fields": [
     {
-      "id": "task_id",
+      "id": "id",
       "type": "string",
       "label": "Task ID",
       "description": "The task ID returned from the bulk verification submission",
       "validation": {
         "required": true
-      },
-      "ui_options": {
-        "ui_widget": "input",
-        "placeholder": "12345-abc-def-67890"
       }
     },
     {
@@ -26,6 +22,6 @@
     }
   ],
   "ui_options": {
-    "ui_order": ["task_id", "api_connection"]
+    "ui_order": ["id", "api_connection"]
   }
 }

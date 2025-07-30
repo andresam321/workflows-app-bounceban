@@ -5,14 +5,19 @@ import os
 import requests
 import json
 
+def extract_api_key(api_connection: dict) -> str:
+    if not api_connection:
+        return None
+    return api_connection.get("connection_data", {}).get("value", {}).get("api_key_bearer")
 @router.route("/execute", methods=["POST", "GET"])
 def execute():
-    # request = Request(flask_request)
-    # data = request.data
-    data = flask_request.get_json(force=True)
+    request = Request(flask_request)
+    data = request.data
+    # data = flask_request.get_json(force=True)
     # Get the list of emails to verify
-    emails = data.get("emails", [])
-    print(f"Received emails for bulk verification: {emails}")
+    emails_raw = data.get("emails", "")
+    emails = [email.strip() for email in emails_raw.splitlines() if email.strip()]
+    # print(f"Received emails for bulk verification: {emails}")
     if not emails:
         return Response(
             data={"error": "Emails list is required"},
@@ -36,14 +41,15 @@ def execute():
     task_name = data.get("task_name", "Bulk Verification Task")
     
     # Get API key from connection or environment
-    api_key = None
-    if data.get("api_connection"):
-        api_key = data["api_connection"].get("api_key")
+    # api_key = None
+    dev_studio_api_key = extract_api_key(data.get("api_connection"))
+    # if data.get("api_connection"):
+    #     api_key = data["api_connection"].get("api_key")
     
-    if not api_key:
-        api_key = os.environ.get("BOUNCEBAN_API_KEY")
+    # if not api_key:
+    #     api_key = os.environ.get("BOUNCEBAN_API_KEY")
     
-    if not api_key:
+    if not dev_studio_api_key:
         return Response(
             data={"error": "API key is required"},
             metadata={"status": "failed"}
@@ -54,7 +60,7 @@ def execute():
     
     # Headers for BounceBan API (using Authorization without Bearer prefix)
     headers = {
-        "Authorization": api_key,
+        "Authorization": dev_studio_api_key,
         "Content-Type": "application/json"
     }
     
@@ -70,7 +76,7 @@ def execute():
         response.raise_for_status()
         
         result = response.json()
-        print(f"Response from BounceBan API: {json.dumps(result, indent=2)}")
+        # print(f"Response from BounceBan API: {json.dumps(result, indent=2)}")
         # Extract task creation data from response
         task_data = {
             "task_id": result.get("id"),

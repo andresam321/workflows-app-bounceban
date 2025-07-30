@@ -5,17 +5,17 @@
   "fields": [
     {
       "id": "emails",
-      "type": "array",
+      "type": "string",
       "label": "Email List",
-      "description": "List of email addresses to verify (maximum 500,000)",
+      "description": "Enter one email address per line. Do not separate emails with commas or spaces. Even if the text area is wide, place each email on its own line like:\ndev@bounceban.com\nsupport@bounceban.com",
+      "default": "dev@bounceban.com\nsupport@bounceban.com",
       "validation": {
         "required": true,
         "minItems": 1,
         "maxItems": 500000
       },
       "ui_options": {
-        "ui_widget": "textarea",
-        "placeholder": "[\"email1@example.com\", \"email2@example.com\"]"
+        "ui_widget": "textarea"
       }
     },
     {

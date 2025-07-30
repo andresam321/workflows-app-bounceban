@@ -4,16 +4,12 @@
   },
   "fields": [
     {
-      "id": "task_id",
+      "id": "id",
       "type": "string",
       "label": "Task ID",
       "description": "The task ID of the completed bulk verification",
       "validation": {
         "required": true
-      },
-      "ui_options": {
-        "ui_widget": "input",
-        "placeholder": "12345-abc-def-67890"
       }
     },
     {
@@ -24,10 +20,6 @@
       "validation": {
         "required": false,
         "minimum": 0
-      },
-      "ui_options": {
-        "ui_widget": "input",
-        "placeholder": "0"
       }
     },
     {
@@ -39,10 +31,6 @@
         "required": false,
         "minimum": 1,
         "maximum": 10000
-      },
-      "ui_options": {
-        "ui_widget": "input",
-        "placeholder": "1000"
       }
     },
     {
@@ -50,13 +38,15 @@
       "type": "string",
       "label": "Filter Status",
       "description": "Filter results by status (default: all)",
+      "default": "all",
       "validation": {
-        "required": false,
-        "enum": ["all", "deliverable", "undeliverable", "risky", "unknown"]
+        "required": false
       },
       "ui_options": {
-        "ui_widget": "select",
-        "options": [
+        "ui_widget": "SelectWidget"
+      },
+        "choices":{
+          "values":[
           {"label": "All", "value": "all"},
           {"label": "Deliverable", "value": "deliverable"},
           {"label": "Undeliverable", "value": "undeliverable"},
@@ -64,6 +54,7 @@
           {"label": "Unknown", "value": "unknown"}
         ]
       }
+      
     },
     {
       "type": "connection",
@@ -75,6 +66,6 @@
     }
   ],
   "ui_options": {
-    "ui_order": ["task_id", "offset", "limit", "filter_status", "api_connection"]
+    "ui_order": ["id", "offset", "limit", "filter_status", "api_connection"]
   }
 }

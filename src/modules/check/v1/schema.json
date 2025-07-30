@@ -4,21 +4,13 @@
   },
   "fields": [
     {
-      "id": "id",
+      "id": "query",
       "type": "string",
-      "label": "Task ID",
-      "description": "The task ID of the bulk verification to delete",
+      "label": "Email or Domain to Check",
+      "description": "Enter an email address or domain to check for characteristics",
       "validation": {
-        "required": true
-      }
-    },
-    {
-      "id": "confirm_delete",
-      "type": "boolean",
-      "label": "Confirm Delete",
-      "description": "Confirm that you want to permanently delete this bulk verification task and all its results",
-      "validation": {
-        "required": true
+        "required": true,
+        "minLength": 3
       }
     },
     {
@@ -31,6 +23,6 @@
     }
   ],
   "ui_options": {
-    "ui_order": ["id", "confirm_delete", "api_connection"]
+    "ui_order": ["query", "api_connection"]
   }
 }

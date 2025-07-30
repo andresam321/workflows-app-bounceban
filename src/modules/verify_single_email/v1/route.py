@@ -4,34 +4,28 @@ from main import router
 import os
 import requests
 
+def extract_api_key(api_connection: dict) -> str:
+    if not api_connection:
+        return None
+    return api_connection.get("connection_data", {}).get("value", {}).get("api_key_bearer")
+
 @router.route("/execute", methods=["POST", "GET"])
 def execute():
-    # request = Request(flask_request)
-    # data = request.data
-    data = flask_request.get_json(force=True)
-    print(f"Data received for email verification: {data}")
+    request = Request(flask_request)
+    data = request.data
+    # data = flask_request.get_json(force=True)
+    # print(f"Data received for email verification: {data}")
     # Get the email to verify
     email = data.get("email")
-    print(f"Email verify: {email}")
-    if not email:
-        return Response(
-            data={"error": "Email is required"},
-            metadata={"status": "failed"}
-        )
+    # print(f"Email verify: {email}")
     if not email or "@" not in email or "." not in email.split("@")[-1]:
         return Response(
             data={"error": "A valid email address is required"},
             metadata={"status": "failed"}
         )
     # Get API key from connection or environment
-    api_key = None
-    if data.get("api_connection"):
-        api_key = data["api_connection"].get("api_key")
-    
-    if not api_key:
-        api_key = os.environ.get("BOUNCEBAN_API_KEY")
-    
-    if not api_key:
+    dev_studio_api_key = extract_api_key(data.get("api_connection"))
+    if not dev_studio_api_key:
         return Response(
             data={"error": "API key is required"},
             metadata={"status": "failed"}
@@ -42,7 +36,7 @@ def execute():
     
     # Headers for BounceBan API (using Authorization without Bearer prefix)
     headers = {
-        "Authorization": api_key,
+        "Authorization": dev_studio_api_key,
         "Content-Type": "application/json"
     }
     

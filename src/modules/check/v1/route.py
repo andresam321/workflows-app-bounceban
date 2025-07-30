@@ -1,28 +1,85 @@
-from workflows_cdk import Response, Request
+from workflows_cdk import Request, Response
 from flask import request as flask_request
 from main import router
+import os
+import requests
 
-@router.route("/execute", methods=["GET", "POST"])
+def extract_api_key(api_connection: dict) -> str:
+    if not api_connection:
+        return None
+    return api_connection.get("connection_data", {}).get("value", {}).get("api_key_bearer")
+
+@router.route("/execute", methods=["POST", "GET"])
 def execute():
-    """
-    This is the function that is executed when you click on "Run" on a workflow that uses this action.
-    """
-    request = Request(flask_request)
+    # Parse request JSON
+    data = flask_request.get_json(force=True)
 
-    # The data object of request.data will contain all of the fields filled in the form and defined in the schema.json file.
-    data = request.data
+    # Get the input to check (email or domain)
+    query = data.get("query")
+    if not query:
+        return Response(
+            data={"error": "Email or domain is required."},
+            metadata={"status": "failed"}
+        )
 
-    # Your logic here
-    # Here you can add your logic to execute the action which may consist of, for example:
-    # - calling an API
-    # - doing some calculations
-    # - doing some data transformations
-    # - validating data
-    
+    # Extract API key from connection object or environment
+    api_key = None
+    if data.get("api_connection"):
+        connection_data = data["api_connection"].get("connection_data", {})
+        api_key = connection_data.get("value") or data["api_connection"].get("api_key")
 
-    output = []
+    if not api_key:
+        api_key = os.environ.get("BOUNCEBAN_API_KEY")
 
-    return Response(data=output, metadata={"affected_rows": len(output)})
+    if not api_key:
+        return Response(
+            data={"error": "API key is required."},
+            metadata={"status": "failed"}
+        )
+
+    # API endpoint and headers
+    url = "https://api.bounceban.com/v1/check"
+    headers = {
+        "Authorization": api_key,
+        "Content-Type": "application/json"
+    }
+
+    # Correct parameter based on input
+    if "@" in query:
+        params = { "email": query }
+    else:
+        params = { "domain": query }
+
+    print(f"Making request to BounceBan with params: {params}")  # Debugging
+
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=30)
+        response.raise_for_status()
+
+        result = response.json()
+        print(f"BounceBan API Response: {result}")  # Debugging
+
+        # Format response payload
+        check_data = {
+            "query": query,
+            "domain_type": result.get("domain_type"),
+            "username_type": result.get("username_type"),
+            "syntax_valid": result.get("syntax_valid"),
+            "credits_consumed": result.get("credits_consumed"),
+            "credits_remaining": result.get("credits_remaining"),
+            "raw": result  # Optional: include raw result for debugging
+        }
+
+        return Response(data=check_data, metadata={"status": "success"})
+
+    except requests.exceptions.Timeout:
+        return Response(data={"error": "Request timeout"}, metadata={"status": "failed"})
+
+    except requests.exceptions.RequestException as e:
+        return Response(data={"error": f"API request failed: {str(e)}"}, metadata={"status": "failed"})
+
+    except Exception as e:
+        return Response(data={"error": f"Unexpected error: {str(e)}"}, metadata={"status": "failed"})
 
 
 @router.route("/content", methods=["GET", "POST"])

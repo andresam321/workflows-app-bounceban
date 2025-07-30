@@ -4,16 +4,12 @@
   },
   "fields": [
     {
-      "id": "verification_id",
+      "id": "id",
       "type": "string",
       "label": "Verification ID",
       "description": "The verification ID returned from the initial email verification request",
       "validation": {
         "required": true
-      },
-      "ui_options": {
-        "ui_widget": "input",
-        "placeholder": "abc123-def456-ghi789"
       }
     },
     {
@@ -26,6 +22,6 @@
     }
   ],
   "ui_options": {
-    "ui_order": ["verification_id", "api_connection"]
+    "ui_order": ["id", "api_connection"]
   }
 }
