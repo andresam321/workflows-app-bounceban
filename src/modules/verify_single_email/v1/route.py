@@ -14,87 +14,167 @@ def execute():
     request = Request(flask_request)
     data = request.data
     # data = flask_request.get_json(force=True)
-    # print(f"Data received for email verification: {data}")
-    # Get the email to verify
-    email = data.get("email")
-    # print(f"Email verify: {email}")
-    if not email or "@" not in email or "." not in email.split("@")[-1]:
-        return Response(
-            data={"error": "A valid email address is required"},
-            metadata={"status": "failed"}
-        )
-    # Get API key from connection or environment
-    dev_studio_api_key = extract_api_key(data.get("api_connection"))
-    if not dev_studio_api_key:
+    # api_key=os.getenv("BOUNCEBAN_API_KEY")
+    # Extract API key first - required for both operations
+    api_key = extract_api_key(data.get("api_connection"))
+    if not api_key:
         return Response(
             data={"error": "API key is required"},
             metadata={"status": "failed"}
         )
     
-    # BounceBan API endpoint for single email verification
-    url = "https://api.bounceban.com/v1/verify/single"
-    
-    # Headers for BounceBan API (using Authorization without Bearer prefix)
+    # Headers for BounceBan API
     headers = {
-        "Authorization": dev_studio_api_key,
+        "Authorization": api_key,
         "Content-Type": "application/json"
     }
+    print(f"Headers for request: {headers}")
+    # Check if we have a verification_id (polling mode)
+    verification_id = data.get("verification_id")
     
-    # Query parameters
-    params = {
-        "email": email
-    }
+    if verification_id:
+        # Mode 2: Check verification status
+        print(f"Checking status for verification ID: {verification_id}")
+        
+        url = "https://api.bounceban.com/v1/verify/single/status"
+        params = {"id": verification_id}
+        
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=30)
+            response.raise_for_status()
+            
+            result = response.json()
+            print(f"Status check response: {result}")
+            
+            # Extract verification result data
+            verification_result = {
+                "verification_id": verification_id,
+                "email": result.get("email"),
+                "status": result.get("status"),
+                "result": result.get("result"),
+                "result_code": result.get("result_code"),
+                "score": result.get("score"),
+                "is_catchall": result.get("is_catchall"),
+                "is_disposable": result.get("is_disposable"),
+                "is_role": result.get("is_role"),
+                "is_free": result.get("is_free"),
+                "is_seg_protected": result.get("is_seg_protected"),
+                "message": result.get("message"),
+                "details": result.get("details"),
+                "mx_records": result.get("mx_records"),
+                "smtp_provider": result.get("smtp_provider"),
+                "timestamp": result.get("timestamp"),
+                "completed_at": result.get("completed_at")
+            }
+            
+            # Determine metadata status based on verification status
+            if result.get("status") == "completed":
+                # Map result to metadata status
+                if result.get("result") in ["deliverable", "valid"]:
+                    metadata_status = "success"
+                elif result.get("result") in ["undeliverable", "invalid"]:
+                    metadata_status = "failed"
+                elif result.get("result") in ["risky", "catchall", "unknown"]:
+                    metadata_status = "success"  # Still success but with warnings
+                else:
+                    metadata_status = "success"
+            elif result.get("status") == "processing":
+                metadata_status = "still processing"
+            else:
+                metadata_status = "failed"
+            
+            return Response(
+                data=verification_result,
+                metadata={
+                    "status": metadata_status,
+                    "verification_status": result.get("result", "unknown")
+                }
+            )
+            
+        except requests.exceptions.Timeout:
+            return Response(
+                data={"error": "Request timeout"},
+                metadata={"status": "failed"}
+            )
+        except requests.exceptions.RequestException as e:
+            return Response(
+                data={"error": f"API request failed: {str(e)}"},
+                metadata={"status": "failed"}
+            )
+        except Exception as e:
+            return Response(
+                data={"error": f"Unexpected error: {str(e)}"},
+                metadata={"status": "failed"}
+            )
     
-    try:
-        # Make GET request to BounceBan API
-        response = requests.get(url, headers=headers, params=params, timeout=30)
-        response.raise_for_status()
+    else:
+        # Mode 1: Initiate email verification
+        email = data.get("email")
         
-        result = response.json()
+        # Validate email
+        if not email or "@" not in email or "." not in email.split("@")[-1]:
+            return Response(
+                data={"error": "A valid email address is required"},
+                metadata={"status": "failed"}
+            )
         
-        # Extract verification data from response
-        verification_data = {
-            "email": email,
-            "verification_id": result.get("id"),
-            "status": result.get("status"),
-            "result": result.get("result"),
-            "score": result.get("score"),
-            "is_catchall": result.get("is_catchall"),
-            "is_disposable": result.get("is_disposable"),
-            "is_role": result.get("is_role"),
-            "is_free": result.get("is_free"),
-            "message": result.get("message"),
-            "timestamp": result.get("timestamp")
-        }
+        print(f"Initiating verification for email: {email}")
         
-        # Determine metadata status based on result
-        if result.get("status") in ["completed", "success"]:
-            metadata_status = "success"
-        elif result.get("status") == "processing":
-            metadata_status = "still processing"
-        else:
-            metadata_status = "failed"
-        print(f"Verification data: {verification_data}")
-        return Response(
-            data=verification_data,
-            metadata={"status": metadata_status}
-        )
+        url = "https://api.bounceban.com/v1/verify/single"
+        params = {"email": email}
         
-    except requests.exceptions.Timeout:
-        return Response(
-            data={"error": "Request timeout"},
-            metadata={"status": "failed"}
-        )
-    except requests.exceptions.RequestException as e:
-        return Response(
-            data={"error": f"API request failed: {str(e)}"},
-            metadata={"status": "failed"}
-        )
-    except Exception as e:
-        return Response(
-            data={"error": f"Unexpected error: {str(e)}"},
-            metadata={"status": "failed"}
-        )
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=30)
+            response.raise_for_status()
+            
+            result = response.json()
+            print(f"Verification initiation response: {result}")
+            
+            # Extract verification data from response
+            verification_data = {
+                "email": email,
+                "verification_id": result.get("id"),
+                "status": result.get("status"),
+                "result": result.get("result"),
+                "score": result.get("score"),
+                "is_catchall": result.get("is_accept_all"),  # adjust key name
+                "is_disposable": result.get("is_disposable"),
+                "is_role": result.get("is_role"),
+                "is_free": result.get("is_free"),
+                "message": result.get("message"),  # likely None
+                "timestamp": result.get("verify_at"),  # rename key
+                "mx_records": result.get("mx_records"),
+                "smtp_provider": result.get("smtp_provider")
+            }
+            
+            # Determine metadata status based on result
+            if result.get("status") in ["completed", "success"]:
+                metadata_status = "success"
+            elif result.get("status") == "processing":
+                metadata_status = "still processing"
+            else:
+                metadata_status = "failed"
+            
+            return Response(
+                data=verification_data,
+                metadata={"status": metadata_status}
+            )
+            
+        except requests.exceptions.Timeout:
+            return Response(
+                data={"error": "Request timeout"},
+                metadata={"status": "failed"}
+            )
+        except requests.exceptions.RequestException as e:
+            return Response(
+                data={"error": f"API request failed: {str(e)}"},
+                metadata={"status": "failed"}
+            )
+        except Exception as e:
+            return Response(
+                data={"error": f"Unexpected error: {str(e)}"},
+                metadata={"status": "failed"}
+            )
 
 @router.route("/content", methods=["GET", "POST"])
 def content():

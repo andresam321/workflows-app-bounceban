@@ -7,9 +7,9 @@
       "id": "email",
       "type": "string",
       "label": "Email Address",
-      "description": "The email address to verify",
+      "description": "The email address to verify. Leave empty if checking status of existing verification.",
       "validation": {
-        "required": true
+        "required": false
       }
     },
     {

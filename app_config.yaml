@@ -1,5 +1,5 @@
 app_settings:
-  app_type: "connector"
+  app_type: "Connector"
   app_name: "BounceBan Connector"
   app_icon_svg_url: "https://cdn.brandfetch.io/id9Bpy_H9O/theme/dark/idl_D0lOl6.svg?c=1dxbfHSJFAPEGdCLU4o5B" # this is the icon of the app, should be a URL pointing to a SVG file.
   app_description: "Connector for BounceBan email verification and domain checking"

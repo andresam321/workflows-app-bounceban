@@ -7,11 +7,10 @@
       "id": "emails",
       "type": "string",
       "label": "Email List",
-      "description": "Enter one email address per line. Do not separate emails with commas or spaces. Even if the text area is wide, place each email on its own line like:\ndev@bounceban.com\nsupport@bounceban.com",
+      "description": "Enter one email address per line for bulk verification. Leave empty if checking status of existing task.",
       "default": "dev@bounceban.com\nsupport@bounceban.com",
       "validation": {
-        "required": true,
-        "minItems": 1,
+        "required": false,
         "maxItems": 500000
       },
       "ui_options": {
@@ -22,11 +21,56 @@
       "id": "task_name",
       "type": "string",
       "label": "Task Name",
-      "description": "Name for this bulk verification task (optional)",
+      "description": "Name for this bulk verification task (only used when submitting new emails)",
       "default": "My Bulk Verification Task",
       "validation": {
         "required": false,
         "maxLength": 100
+      }
+    },
+    {
+      "id": "offset",
+      "type": "integer",
+      "label": "Results Offset",
+      "description": "Starting position for paginated results when task is complete (default: 0)",
+      "default": 0,
+      "validation": {
+        "required": false,
+        "minimum": 0
+      }
+    },
+    {
+      "id": "limit",
+      "type": "integer",
+      "label": "Results Limit",
+      "description": "Number of results to retrieve when task is complete (1-10000, default: 1000)",
+      "default": 1000,
+      "validation": {
+        "required": false,
+        "minimum": 1,
+        "maximum": 10000
+      }
+    },
+    {
+      "id": "filter_status",
+      "type": "string",
+      "label": "Filter Results By Status",
+      "description": "Filter results by verification status when retrieving completed task results",
+      "default": "all",
+      "validation": {
+        "required": false
+      },
+      "ui_options": {
+        "ui_widget": "SelectWidget"
+      },
+      "choices": {
+        "values": [
+          {"label": "All Results", "value": "all"},
+          {"label": "Deliverable Only", "value": "deliverable"},
+          {"label": "Undeliverable Only", "value": "undeliverable"},
+          {"label": "Risky Only", "value": "risky"},
+          {"label": "Unknown Only", "value": "unknown"}
+        ]
       }
     },
     {
@@ -39,6 +83,6 @@
     }
   ],
   "ui_options": {
-    "ui_order": ["emails", "task_name", "api_connection"]
+    "ui_order": ["emails", "task_name", "offset", "limit", "filter_status", "api_connection"]
   }
 }

@@ -1,3 +1,0 @@
-module_settings:
-  module_name: "BounceBan - Request Bulk Results"
-  module_description: "Request result generation for emails within a completed bulk verification task. Supports pagination for large result sets."

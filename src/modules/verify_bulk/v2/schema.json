@@ -7,7 +7,16 @@
       "id": "id",
       "type": "string",
       "label": "Task ID",
-      "description": "The task ID returned from the bulk verification submission",
+      "description": "The task ID of the bulk verification to delete",
+      "validation": {
+        "required": true
+      }
+    },
+    {
+      "id": "confirm_delete",
+      "type": "boolean",
+      "label": "Confirm Delete",
+      "description": "Confirm that you want to permanently delete this bulk verification task and all its results",
       "validation": {
         "required": true
       }
@@ -22,6 +31,6 @@
     }
   ],
   "ui_options": {
-    "ui_order": ["id", "api_connection"]
+    "ui_order": ["id", "confirm_delete", "api_connection"]
   }
 }

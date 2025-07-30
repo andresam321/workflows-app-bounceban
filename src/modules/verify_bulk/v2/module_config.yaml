@@ -1,3 +1,3 @@
 module_settings:
-  module_name: "BounceBan - Get Bulk Status"
-  module_description: "Check the processing status of a bulk verification task. Returns progress information including total emails, checked count, and completion percentage."
+  module_name: "BounceBan - Delete Bulk Task"
+  module_description: "Delete an existing bulk verification task and all associated results from BounceBan. This action is permanent and cannot be undone. Requires confirmation before deletion."

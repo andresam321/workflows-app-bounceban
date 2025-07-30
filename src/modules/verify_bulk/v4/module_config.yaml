@@ -1,3 +1,0 @@
-module_settings:
-  module_name: "BounceBan - Get Bulk Results JSON"
-  module_description: "Retrieve processed verification results in JSON format. Supports pagination and filtering by verification status. Returns detailed verification data for each email."

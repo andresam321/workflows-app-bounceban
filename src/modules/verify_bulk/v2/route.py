@@ -16,12 +16,23 @@ def execute():
     # data = flask_request.get_json(force=True)
     # Get the task ID
     task_id = data.get("id")
-    # print(f"Received task ID: {task_id}")
-    if not task_id or not isinstance(task_id, str) or len(task_id.strip()) < 8:
+    if not task_id:
         return Response(
-            data={"error": "Task ID is missing or appears invalid"},
+            data={"error": "Task ID is required"},
             metadata={"status": "failed"}
         )
+    
+    # Get confirmation flag (optional but recommended)
+    confirm_delete = data.get("confirm_delete", False)
+    if not confirm_delete:
+        return Response(
+            data={
+                "error": "Deletion not confirmed",
+                "message": "Set confirm_delete to true to proceed with deletion"
+            },
+            metadata={"status": "failed"}
+        )
+    
     # Get API key from connection or environment
     dev_studio_api_key = extract_api_key(data.get("api_connection"))
     if not dev_studio_api_key:
@@ -29,61 +40,41 @@ def execute():
             data={"error": "API key is required"},
             metadata={"status": "failed"}
         )
-    # BounceBan API endpoint for checking bulk task status
-    url = f"https://api.bounceban.com/v1/verify/bulk/status"
-
-    # print(f"Requesting status for task ID: {task_id} from URL: {url}")
+    
+    # BounceBan API endpoint for deleting bulk task
+    url = "https://api.bounceban.com/v1/verify/bulk/destroy"
+    
     # Headers for BounceBan API (using Authorization without Bearer prefix)
     headers = {
         "Authorization": dev_studio_api_key,
         "Content-Type": "application/json"
     }
     
-    # Query parameters
+    # Request body
     payload = {
         "id": task_id
     }
     
     try:
-        # Make GET request to BounceBan API
-        response = requests.get(url, headers=headers, params=payload, timeout=30)
+        # Make POST request to BounceBan API
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
         response.raise_for_status()
         
         result = response.json()
-        # print(f"Response from BounceBan API: {result}")
-        # Extract status data from response
-        status_data = {
-            "task_id": task_id,
-            "task_name": result.get("name"),
-            "status": result.get("status"),
-            "count_total": result.get("count_total", 0),
-            "count_checked": result.get("count_checked", 0),
-            "count_remaining": result.get("count_remaining", 0),
-            "progress_percentage": result.get("progress_percentage", 0),
-            "verification_started_at": result.get("verification_started_at"),
-            "verification_ended_at": result.get("verification_ended_at"),
-            "estimated_time_remaining": result.get("estimated_time_remaining"),
-            "created_at": result.get("created_at"),
-            "updated_at": result.get("updated_at")
-        }
         
-        # Determine metadata status based on task status
-        task_status = result.get("status", "").lower()
-        if task_status in ["completed", "complete", "finished"]:
-            metadata_status = "success"
-        elif task_status in ["processing", "running", "verifying", "waiting", "queued"]:
-            metadata_status = "still processing"
-        elif task_status in ["failed", "error", "cancelled"]:
-            metadata_status = "failed"
-        else:
-            metadata_status = "still processing"
+        # Extract deletion result from response
+        deletion_data = {
+            "task_id": task_id,
+            "status": result.get("status", "success"),
+            "message": result.get("message", "Bulk verification task deleted successfully"),
+            "deleted_at": result.get("deleted_at"),
+            "emails_deleted": result.get("emails_deleted", 0),
+            "storage_freed": result.get("storage_freed")
+        }
         
         return Response(
             data=result,
-            metadata={
-                "status": metadata_status,
-                "task_status": task_status
-            }
+            metadata={"status": "success"}
         )
         
     except requests.exceptions.Timeout:
@@ -92,6 +83,15 @@ def execute():
             metadata={"status": "failed"}
         )
     except requests.exceptions.RequestException as e:
+        # Handle 404 errors specially - task might already be deleted
+        if hasattr(e, 'response') and e.response.status_code == 404:
+            return Response(
+                data={
+                    "error": "Task not found",
+                    "message": "The specified task ID does not exist or has already been deleted"
+                },
+                metadata={"status": "failed"}
+            )
         return Response(
             data={"error": f"API request failed: {str(e)}"},
             metadata={"status": "failed"}
